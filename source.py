@@ -1,25 +1,29 @@
 import pandas as pd
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.naive_bayes import MultinomialNB
 from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import CountVectorizer
 from sklearn import svm
 
-# Đọc dữ liệu từ file csv chứa email và nhãn
-data = pd.read_csv('spam.csv')
-emails = data['text']
-labels = data['label']
-email_train, email_test,lebels_train, lebels_test = train_test_split(emails,labels,test_size = 0.2)
+spam = pd.read_csv('spam.csv', encoding='latin-1')
 
-# Tạo vector đặc trưng từ các email
-vectorizer = CountVectorizer()
-features = vectorizer.fit_transform(emails)
+data = spam.drop(["Unnamed: 2", "Unnamed: 3", "Unnamed: 4"], axis=1)
+data = data.rename(columns={"v2": "text", "v1": "label"})
 
-# Tạo mô hình bộ lọc Bayes Naive
-nb = MultinomialNB()
-nb.fit(features, labels)
+z = data['text']
+y = data["label"]
 
-# Sử dụng mô hình để dự đoán nhãn của một email mới
-new_email = ["Bạn đã thắng giải thưởng lớn"]
-new_features = vectorizer.transform(new_email)
-prediction = nb.predict(new_features)
+z_train, z_test, y_train, y_test = train_test_split(z, y, test_size=0.2)
+
+cv = CountVectorizer()
+features = cv.fit_transform(z_train)
+
+model = svm.SVC()
+model.fit(features, y_train)
+
+newEmail = [""]
+
+features_test = cv.transform(z_test)
+print(model.score(features_test, y_test))
+
+new_features = cv.transform(newEmail)
+prediction = model.predict(new_features)
 print(prediction)
